@@ -1,6 +1,6 @@
 import { AsaasService, Subscription, SubscriptionResponse } from './AsaasConfig';
 
-const SUBSCRIPTION_VALUE = 15; // R$ 15,00 mensal
+const SUBSCRIPTION_VALUE = 8; // R$ 15,00 mensal
 const SUBSCRIPTION_DESCRIPTION = 'Assinatura Mensal Premium';
 
 export class SubscriptionService {

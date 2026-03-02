@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 // Configuração da API Asaas
-const ASAAS_API_URL = 'https://sandbox.asaas.com/api/v3'; // Ambiente de testes
+const ASAAS_API_URL = 'https://www.asaas.com/api/v3'; // Ambiente de testes
 // Para produção: 'https://www.asaas.com/api/v3'
 
-const ASAAS_API_KEY = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmEyNzc0ZjVkLTkyZGMtNGU1MC1hMDlkLTkyOTEzMTM3NTE1Yjo6JGFhY2hfNGIxZTU5ZTYtMjQ2OS00NjI0LTkxYjItNDkzMTEwNTNlNzlj"
+const ASAAS_API_KEY = "$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmQ2NzQyZjY2LTU5ZjYtNGMwZS1hMWE5LTI3ODBkNDkyMzU0OTo6JGFhY2hfZWFlN2VmNjgtMTNhMS00NjY2LTk5ZTctMzg0YTgzNmQ0OGUz"
 
 // Configuração do Axios para requisições à API Asaas
 const asaasApi = axios.create({
