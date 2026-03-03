@@ -1,17 +1,18 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { AsaasService, Customer } from '../services/AsaasConfig';
+import { Customer } from '../services/AsaasConfig';
+import CloudFunctionsService from '../services/CloudFunctionsService';
 import { auth } from '../services/FirebaseConfig';
 import SubscriptionService from '../services/SubscriptionService';
 import UserSubscriptionService from '../services/UserSubscriptionService';
@@ -182,47 +183,51 @@ export default function AssinaturaScreen() {
 
     setCarregando(true);
 
-    try {
-      // Criar ou obter cliente
-      let customerIdFinal = clienteId;
-      
-      if (!customerIdFinal) {
-        const customerData: Omit<Customer, 'id'> = {
-          name: nome,
-          email: email,
-          cpfCnpj: cpf.replace(/\D/g, ''),
-          phone: telefone.replace(/\D/g, ''),
-          mobilePhone: telefone.replace(/\D/g, ''),
-        };
+   try {
+  // Criar ou obter cliente
+  let customerIdFinal = clienteId;
 
-        const customer = await AsaasService.createCustomer(customerData);
-        customerIdFinal = customer.id || null;
-        setClienteId(customerIdFinal);
-      }
+  if (!customerIdFinal) {
+    const customerData: Omit<Customer, 'id'> = {
+      name: nome,
+      email: email,
+      cpfCnpj: cpf.replace(/\D/g, ''),
+      phone: telefone.replace(/\D/g, ''),
+      mobilePhone: telefone.replace(/\D/g, ''),
+    };
 
-      // Criar assinatura
-      const creditCardData = {
-        holderName: nomeCartao,
-        number: numeroCartao.replace(/\D/g, ''),
-        expiryMonth: validadeMes,
-        expiryYear: validadeAno,
-        ccv: cvv,
-      };
+    const response = await CloudFunctionsService.createCustomer(customerData);
 
-      const creditCardHolderInfo = {
-        name: nomeCartao,
-        email: emailCartao,
-        cpfCnpj: cpfCartao.replace(/\D/g, ''),
-        postalCode: cepCartao.replace(/\D/g, ''),
-        addressNumber: numeroEnderecoCartao,
-        addressComplement: '',
-        phone: telefoneCartao.replace(/\D/g, ''),
-        mobilePhone: telefoneCartao.replace(/\D/g, ''),
-      };
+    console.log("RETORNO CREATE CUSTOMER:", response);
 
-      if (!customerIdFinal) {
-        throw new Error('Não foi possível obter ID do cliente');
-      }
+    customerIdFinal = response?.customer?.id ?? null;
+
+    if (!customerIdFinal) {
+      throw new Error('Não foi possível obter ID do cliente');
+    }
+
+    setClienteId(customerIdFinal);
+  }
+
+  // Criar assinatura
+  const creditCardData = {
+    holderName: nomeCartao,
+    number: numeroCartao.replace(/\D/g, ''),
+    expiryMonth: validadeMes,
+    expiryYear: validadeAno,
+    ccv: cvv,
+  };
+
+  const creditCardHolderInfo = {
+    name: nomeCartao,
+    email: emailCartao,
+    cpfCnpj: cpfCartao.replace(/\D/g, ''),
+    postalCode: cepCartao.replace(/\D/g, ''),
+    addressNumber: numeroEnderecoCartao,
+    addressComplement: '',
+    phone: telefoneCartao.replace(/\D/g, ''),
+    mobilePhone: telefoneCartao.replace(/\D/g, ''),
+  };
 
       const assinatura = await SubscriptionService.createMonthlySubscription(
         customerIdFinal,

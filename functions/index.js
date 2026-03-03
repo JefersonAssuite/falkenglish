@@ -93,7 +93,7 @@ exports.createSubscription = functions
       const subscriptionData = {
         customer: customerId,
         billingType: 'CREDIT_CARD',
-        value: 8, // R$ 15,00
+        value: 5.00, // R$ 5,00
         nextDueDate: new Date().toISOString().split('T')[0],
         cycle: 'MONTHLY',
         description: 'Assinatura Mensal Premium',

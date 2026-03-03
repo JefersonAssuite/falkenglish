@@ -1,29 +1,24 @@
-import { AsaasService, Subscription, SubscriptionResponse } from './AsaasConfig';
+import { SubscriptionResponse } from './AsaasConfig';
+import CloudFunctionsService from './CloudFunctionsService';
 
-const SUBSCRIPTION_VALUE = 8; // R$ 15,00 mensal
+const SUBSCRIPTION_VALUE = 5; // R$ 5,00 mensal
 const SUBSCRIPTION_DESCRIPTION = 'Assinatura Mensal Premium';
 
 export class SubscriptionService {
-  // Criar assinatura mensal de R$ 15,00
+  // Criar assinatura mensal de R$ 8,00
   static async createMonthlySubscription(
     customerId: string,
     creditCardData?: any,
     creditCardHolderInfo?: any
   ): Promise<SubscriptionResponse> {
     try {
-      const subscriptionData: Omit<Subscription, 'id'> = {
-        customer: customerId,
-        billingType: 'CREDIT_CARD',
-        value: SUBSCRIPTION_VALUE,
-        nextDueDate: new Date().toISOString().split('T')[0], // Hoje
-        cycle: 'MONTHLY',
-        description: SUBSCRIPTION_DESCRIPTION,
-        creditCard: creditCardData,
-        creditCardHolderInfo: creditCardHolderInfo,
-      };
-
-      const subscription = await AsaasService.createSubscription(subscriptionData);
-      return subscription;
+      const result = await CloudFunctionsService.createSubscription({
+        customerId,
+        creditCardData,
+        creditCardHolderInfo
+      }) as any;
+      
+      return result.subscription;
     } catch (error) {
       console.error('Erro ao criar assinatura mensal:', error);
       throw error;
@@ -33,16 +28,8 @@ export class SubscriptionService {
   // Verificar se usuário tem assinatura ativa
   static async hasActiveSubscription(customerId?: string): Promise<boolean> {
     try {
-      const subscriptions = await AsaasService.getSubscriptions(customerId);
-      
-      // Verificar se existe alguma assinatura ativa
-      const activeSubscription = subscriptions.find(sub => 
-        sub.status === 'ACTIVE' || 
-        sub.status === 'PENDING' ||
-        sub.status === 'CONFIRMED'
-      );
-      
-      return !!activeSubscription;
+      const result = await CloudFunctionsService.getSubscriptionStatus() as any;
+      return result.hasActiveSubscription;
     } catch (error) {
       console.error('Erro ao verificar assinatura ativa:', error);
       return false;
@@ -52,16 +39,8 @@ export class SubscriptionService {
   // Obter assinatura ativa do usuário
   static async getActiveSubscription(customerId?: string): Promise<SubscriptionResponse | null> {
     try {
-      const subscriptions = await AsaasService.getSubscriptions(customerId);
-      
-      // Retornar primeira assinatura ativa encontrada
-      const activeSubscription = subscriptions.find(sub => 
-        sub.status === 'ACTIVE' || 
-        sub.status === 'PENDING' ||
-        sub.status === 'CONFIRMED'
-      );
-      
-      return activeSubscription || null;
+      const result = await CloudFunctionsService.getSubscriptionStatus() as any;
+      return result.subscription || null;
     } catch (error) {
       console.error('Erro ao obter assinatura ativa:', error);
       return null;
@@ -71,8 +50,8 @@ export class SubscriptionService {
   // Cancelar assinatura
   static async cancelSubscription(subscriptionId: string): Promise<SubscriptionResponse> {
     try {
-      const cancelledSubscription = await AsaasService.cancelSubscription(subscriptionId);
-      return cancelledSubscription;
+      const result = await CloudFunctionsService.cancelSubscription(subscriptionId) as any;
+      return result;
     } catch (error) {
       console.error('Erro ao cancelar assinatura:', error);
       throw error;
