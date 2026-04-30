@@ -2,15 +2,15 @@ import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { auth } from '../services/FirebaseConfig';
 
@@ -31,7 +31,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       Alert.alert('Sucesso', 'Login realizado com sucesso!');
-      router.push('/home');
+      router.replace('/(tabs)/home');
     } catch (error: any) {
       let mensagemErro = 'Ocorreu um erro ao fazer login';
       

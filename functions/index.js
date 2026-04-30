@@ -10,7 +10,7 @@ const asaasKey = defineSecret("ASAAS_KEY");
 admin.initializeApp();
 
 // Configuração da API Asaas - AMBIENTE DE PRODUÇÃO
-const ASAAS_API_URL = 'https://www.asaas.com/api/v3'; // Produção
+const ASAAS_API_URL = 'https://sandbox.asaas.com/api/v3'; 
 // Para testes: 'https://sandbox.asaas.com/api/v3'
 
 // Função para criar cliente de forma segura
