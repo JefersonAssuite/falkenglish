@@ -1,8 +1,8 @@
+import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -20,28 +20,28 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Feather name="home" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="talk"
         options={{
-          title: 'Talk',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
+          title: 'Exercício',
+          tabBarIcon: ({ color }) => <Feather name="edit-3" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: 'Calendário',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+          tabBarIcon: ({ color }) => <Feather name="calendar" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Configurações',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          tabBarIcon: ({ color }) => <Feather name="settings" size={28} color={color} />,
         }}
       />
     </Tabs>

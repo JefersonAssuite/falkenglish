@@ -1,9 +1,10 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { auth, db } from "../../services/FirebaseConfig";
+import { formatTime } from "../../utils/dateUtils";
 
 interface Message {
   id: string;
@@ -30,9 +31,11 @@ export default function TalkScreen() {
             id: doc.id,
             ...doc.data(),
           }))
-          .sort((a: any, b: any) => 
-            a.createdAt?.seconds - b.createdAt?.seconds
-          ) as Message[];
+          .sort((a: any, b: any) => {
+            const dateA = a.createdAt?.toDate?.() || (a.createdAt?.seconds ? new Date(a.createdAt.seconds * 1000) : new Date(0));
+            const dateB = b.createdAt?.toDate?.() || (b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date(0));
+            return dateA.getTime() - dateB.getTime();
+          }) as Message[];
         
         setMessages(messagesData);
       }
@@ -99,12 +102,7 @@ export default function TalkScreen() {
               opacity: 0.7,
             }}
           >
-            {item.createdAt?.seconds
-              ? new Date(item.createdAt.seconds * 1000).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : ""}
+            {formatTime(item.createdAt)}
           </Text>
         </View>
       </View>

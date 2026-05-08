@@ -1,13 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import { useRouter } from "expo-router";
-import { signOut } from "firebase/auth";
-import { collection, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { FlatList, Image, ScrollView, Text, View } from "react-native";
+import { FlatList, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import BibliotecaCard from "../../components/BibliotecaCard";
 import { Button, Card, HStack, VStack } from "../../components/ui";
 import { auth, db } from "../../services/FirebaseConfig";
+import { formatDateTime } from "../../utils/dateUtils";
 
 interface Biblioteca {
   id: string;
@@ -22,15 +23,16 @@ interface Message {
   titulo?: string;
   message: string;
   midia_url?: string;
-  created_at: {
-    seconds: number;
-  };
+  created_at: any;
 }
 
 export default function Home() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [bibliotecas, setBibliotecas] = useState<Biblioteca[]>([]);
+  const [userData, setUserData] = useState<any>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   const handleLogout = async () => {
     try {
@@ -42,6 +44,41 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Carregar dados do usuário
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Pegar nome do auth ou do firestore
+        const displayName = user.displayName || '';
+        const photoURL = user.photoURL || null;
+        
+        setUserName(displayName);
+        setUserPhoto(photoURL);
+        
+        // Tentar pegar dados mais completos do firestore
+        try {
+          const userDocRef = doc(db, 'usuarios', user.uid);
+          const unsubscribeUserDoc = onSnapshot(userDocRef, (doc) => {
+            if (doc.exists()) {
+              const data = doc.data();
+              setUserData(data);
+              // Usar nome do firestore se não tiver no auth
+              if (!displayName && data.nome) {
+                setUserName(data.nome);
+              }
+              // Usar foto do firestore se não tiver no auth
+              if (!photoURL && data.foto) {
+                setUserPhoto(data.foto);
+              }
+            }
+          });
+          
+          return () => unsubscribeUserDoc();
+        } catch (error) {
+          console.error('Erro ao carregar dados do usuário:', error);
+        }
+      }
+    });
+
     const unsubscribeBibliotecas = onSnapshot(
       collection(db, "bibliotecas"),
       (snapshot) => {
@@ -67,6 +104,7 @@ export default function Home() {
     );
 
     return () => {
+      unsubscribeAuth();
       unsubscribeBibliotecas();
       unsubscribeMessages();
     };
@@ -82,24 +120,71 @@ export default function Home() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      {/* HEADER */}
-      <View style={{ paddingTop: 24 }}>
-        <HStack
-          style={{ paddingHorizontal: 16 }}
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1f2937' }}>
-            Talk
-          </Text>
-
-          <Button
-            variant="ghost"
-            onPress={handleLogout}
-            style={{ minWidth: 44, minHeight: 44 }}
-          >
-            <Feather name="log-out" size={24} color="#000000" />
-          </Button>
+      {/* HEADER PERSONALIZADO */}
+      <View style={{ 
+        backgroundColor: '#000080', 
+        paddingTop: 60, 
+        paddingHorizontal: 20, 
+        paddingBottom: 20 
+      }}>
+        <HStack alignItems="center" justifyContent="space-between">
+          <HStack alignItems="center" space={12}>
+            {/* Foto de Perfil Circular */}
+            {userPhoto ? (
+              <Image 
+                source={{ uri: userPhoto }} 
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 25,
+                  borderWidth: 2,
+                  borderColor: '#ffffff'
+                }}
+              />
+            ) : (
+              <View style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                backgroundColor: '#ffffff',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 2,
+                borderColor: '#ffffff'
+              }}>
+                <Text style={{
+                  fontSize: 10,
+                  color: '#000080',
+                  fontWeight: '600',
+                  textAlign: 'center'
+                }}>
+                  Perfil sem foto
+                </Text>
+              </View>
+            )}
+            
+            {/* Mensagem de Boas-vindas */}
+            <View>
+              <Text style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#ffffff'
+              }}>
+                Hello, {userName || 'Usuário'}!
+              </Text>
+              <Text style={{
+                fontSize: 14,
+                color: 'rgba(255, 255, 255, 0.8)'
+              }}>
+                Bem-vindo de volta
+              </Text>
+            </View>
+          </HStack>
+          
+          {/* Botão de Logout */}
+          <TouchableOpacity onPress={handleLogout}>
+            <Feather name="log-out" size={24} color="#ffffff" />
+          </TouchableOpacity>
         </HStack>
       </View>
 
@@ -230,9 +315,7 @@ export default function Home() {
                   <Text style={{ color: '#4b5563' }}>{item.message}</Text>
 
                   <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>
-                    {new Date(
-                      item.created_at.seconds * 1000
-                    ).toLocaleString()}
+                    {formatDateTime(item.created_at)}
                   </Text>
                 </VStack>
               </Card>

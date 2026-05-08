@@ -1,19 +1,20 @@
 import { useRouter } from 'expo-router';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { Customer } from '../services/AsaasConfig';
 import CloudFunctionsService from '../services/CloudFunctionsService';
-import { auth } from '../services/FirebaseConfig';
+import { auth, db } from '../services/FirebaseConfig';
 import SubscriptionService from '../services/SubscriptionService';
 import UserSubscriptionService from '../services/UserSubscriptionService';
 
@@ -240,6 +241,17 @@ export default function AssinaturaScreen() {
         assinatura.id,
         customerIdFinal
       );
+
+      // Atualizar status do usuário para 'pago' no Firestore
+      const usuario = auth.currentUser;
+      if (usuario) {
+        await updateDoc(doc(db, 'usuarios', usuario.uid), {
+          statusPagamento: 'pago',
+          dataPagamento: serverTimestamp(),
+          assinaturaId: assinatura.id,
+          customerId: customerIdFinal
+        });
+      }
 
       // Mostrar informações da assinatura
       let mensagem = `Assinatura criada com sucesso!\n\n`;

@@ -1,18 +1,19 @@
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { auth } from '../services/FirebaseConfig';
+import { auth, db } from '../services/FirebaseConfig';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,49 @@ export default function LoginScreen() {
     setCarregando(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, senha);
+      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      
+      // Verificar status do pagamento no Firestore
+      const userDoc = await getDoc(doc(db, 'usuarios', userCredential.user.uid));
+      
+      if (!userDoc.exists()) {
+        // Usuário não encontrado no Firestore (pode ser usuário antigo)
+        Alert.alert('Atenção', 'Complete seu cadastro e assine o plano para acessar o aplicativo.');
+        router.replace('/assinatura');
+        return;
+      }
+
+      const userData = userDoc.data();
+      
+      // Verificar se o usuário já completou o onboarding
+      if (!userData.onboardingCompleto) {
+        Alert.alert(
+          'Complete seu Perfil', 
+          'Vamos personalizar seu aprendizado. Redirecionando para o onboarding...',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/onboarding')
+            }
+          ]
+        );
+        return;
+      }
+      
+      if (userData.statusPagamento !== 'pago') {
+        Alert.alert(
+          'Pagamento Pendente', 
+          'Você precisa assinar o plano para acessar o aplicativo. Redirecionando para a página de pagamento...',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/assinatura')
+            }
+          ]
+        );
+        return;
+      }
+
       Alert.alert('Sucesso', 'Login realizado com sucesso!');
       router.replace('/(tabs)/home');
     } catch (error: any) {

@@ -1,11 +1,12 @@
-import { Video } from "expo-av";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { doc, onSnapshot, collection, query, where, orderBy } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { ScrollView, Text, View, Image, FlatList, TouchableOpacity, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Video } from "expo-av";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { FlatList, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Button, Card, HStack, VStack } from "../../components/ui";
 import { db } from "../../services/FirebaseConfig";
-import { Button, Card, VStack, HStack } from "../../components/ui";
+import { formatDate } from "../../utils/dateUtils";
 
 interface Biblioteca {
   id: string;
@@ -94,7 +95,7 @@ export default function LibraryScreen() {
                   backgroundColor: '#000'
                 }}
                 useNativeControls
-                resizeMode="contain"
+                resizeMode='contain'
               />
             ) : (
               <View style={{ 
@@ -123,10 +124,7 @@ export default function LibraryScreen() {
             )}
 
             <Text style={{ fontSize: 12, color: '#9ca3af' }}>
-              {item.createdAt ? 
-                new Date(item.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 
-                'Data não disponível'
-              }
+              {formatDate(item.createdAt)}
             </Text>
           </VStack>
         </VStack>
